@@ -47,3 +47,4 @@ dependencies:
   idf:
     version: '>=5.3'
 
+  espressif/touch_button: =*

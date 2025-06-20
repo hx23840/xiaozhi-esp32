@@ -217,6 +217,36 @@ if(CONFIG_IDF_TARGET_ESP32)
                              )
 endif()
 
+# 确保YUNDO_V2的源文件被包含
+if(CONFIG_BOARD_TYPE_YUNDO_V2)
+    message(STATUS "包含YunDo V2开发板源文件")
+    file(GLOB YUNDO_V2_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/boards/yundo-v2/*.cc)
+    list(APPEND SOURCES ${YUNDO_V2_SOURCES})
+endif()
+
+# 对于某些特定开发板，排除使用旧I2C驱动的文件以避免驱动冲突
+if(CONFIG_BOARD_TYPE_XINGZHI_Cube_0_96OLED_WIFI OR CONFIG_BOARD_TYPE_XINGZHI_Cube_1_54TFT_WIFI OR CONFIG_BOARD_TYPE_YUNDO_V2)
+    message(STATUS "针对特定开发板排除旧I2C驱动文件，避免驱动冲突")
+    
+    # 排除使用旧I2C驱动的音频编解码器文件
+    list(REMOVE_ITEM SOURCES "audio_codecs/es8374_audio_codec.cc")
+    list(REMOVE_ITEM SOURCES "audio_codecs/es8388_audio_codec.cc")
+    list(REMOVE_ITEM SOURCES "audio_codecs/es8311_audio_codec.cc")
+    list(REMOVE_ITEM SOURCES "audio_codecs/box_audio_codec.cc")
+    
+    # 为了避免构建时出现I2C驱动冲突错误，排除以下板子的源文件
+    file(GLOB TAB5_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/boards/m5stack-tab5/*.cc)
+    foreach(file ${TAB5_SOURCES})
+        list(REMOVE_ITEM BOARD_SOURCES ${file})
+    endforeach()
+    
+    # 添加编译定义，告诉预处理器忽略所有旧I2C驱动代码
+    add_compile_definitions(I2C_AVOID_DRIVER_CONFLICT)
+    
+    # 在构建命令中添加额外的标志，以确保完全避免I2C驱动冲突
+    add_compile_options(-DI2C_AVOID_OLD_DRIVER)
+endif()
+
 idf_component_register(SRCS ${SOURCES}
                     EMBED_FILES ${LANG_SOUNDS} ${COMMON_SOUNDS}
                     INCLUDE_DIRS ${INCLUDE_DIRS}

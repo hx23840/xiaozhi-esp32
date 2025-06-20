@@ -79,6 +79,7 @@ public:
     void PlaySound(const std::string_view& sound);
     bool CanEnterSleepMode();
     void SendMcpMessage(const std::string& payload);
+    void SendIotStates(const std::string& states);
     void SetAecMode(AecMode mode);
     AecMode GetAecMode() const { return aec_mode_; }
 

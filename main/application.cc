@@ -1016,6 +1016,14 @@ void Application::SendMcpMessage(const std::string& payload) {
     });
 }
 
+void Application::SendIotStates(const std::string& states) {
+    Schedule([this, states]() {
+        if (protocol_) {
+            protocol_->SendIotStates(states);
+        }
+    });
+}
+
 void Application::SetAecMode(AecMode mode) {
     aec_mode_ = mode;
     Schedule([this]() {
